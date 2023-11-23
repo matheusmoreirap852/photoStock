@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Photo from Camera</title>
+</head>
+<body>
+
+    <form id="myForm">
+        <!-- Your form fields go here -->
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" required>
+
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" required></textarea>
+
+        <!-- Display the captured photo here -->
+        <img id="capturedPhoto" alt="Captured Photo" style="display:none;">
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        // Function to start capturing from the camera
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.play();
+
+                    video.addEventListener('loadeddata', () => {
+                        // Create a canvas element to capture a frame from the video
+                        const canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+
+                        // Capture a frame from the video and display it
+                        const context = canvas.getContext('2d');
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        // Display the captured photo in an image element
+                        const capturedPhoto = document.getElementById('capturedPhoto');
+                        capturedPhoto.src = canvas.toDataURL('image/png');
+                        capturedPhoto.style.display = 'block';
+
+                        // Stop the video stream
+                        stream.getTracks().forEach(track => track.stop());
+                    });
+                })
+                .catch(error => console.error('Error accessing camera:', error));
+        }
+
+        // Call the startCamera function when the page loads
+        window.addEventListener('load', startCamera);
+
+        // Attach the form submission event listener
+        document.getElementById('myForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Include the captured photo in your form submission or take other actions
+            // For example, you can add a hidden input to the form
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'capturedPhoto';
+            hiddenInput.value = document.getElementById('capturedPhoto').src;
+
+            // Append the hidden input to the form
+            document.getElementById('myForm').appendChild(hiddenInput);
+
+            // Finally, submit the form
+            document.getElementById('myForm').submit();
+        });
+    </script>
+
+</body>
+</html>
